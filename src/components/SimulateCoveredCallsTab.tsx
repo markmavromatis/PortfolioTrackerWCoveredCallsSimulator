@@ -302,6 +302,9 @@ export function SimulateCoveredCallsTab({
                     </td>
                     <td className="px-4 py-3 text-right text-slate-200">
                       {formatCurrency(sim.premium)}
+                      {stock && stock.currentPrice
+                        ? ` (${((sim.premium / stock.currentPrice) * 100).toFixed(2)}%)`
+                        : ''}
                     </td>
                     <td className="px-4 py-3 text-right text-slate-400">
                       {formatShortDate(sim.expirationDate)}
