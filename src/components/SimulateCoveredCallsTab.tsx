@@ -135,7 +135,16 @@ export function SimulateCoveredCallsTab({
   }
 
   function handleTickerChange(ticker: string) {
-    setForm({ ...form, ticker, expirationDate: '', strikePrice: '', premium: '' });
+    const stock = stocks.find((s) => s.ticker === ticker);
+    const maxContracts = stock ? Math.floor(stock.quantity / 100) : 0;
+    setForm({
+      ...form,
+      ticker,
+      contracts: maxContracts > 0 ? String(maxContracts) : '1',
+      expirationDate: '',
+      strikePrice: '',
+      premium: '',
+    });
   }
 
   function handleExpirationChange(expirationDate: string) {
