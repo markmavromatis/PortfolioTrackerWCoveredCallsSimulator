@@ -173,7 +173,7 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
               <th className="px-4 py-3 font-medium text-right">Change</th>
               <th className="px-4 py-3 font-medium text-right">Quantity</th>
               <th className="px-4 py-3 font-medium text-right">Market Value</th>
-              <th className="px-4 py-3 font-medium text-right">Volume</th>
+              <th className="px-4 py-3 font-medium text-right">P/L</th>
               <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
@@ -189,6 +189,14 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
               const previousClose = stock.currentPrice - stock.priceChange;
               const changePercent =
                 previousClose !== 0 ? (stock.priceChange / previousClose) * 100 : 0;
+              const pl =
+                stock.costBasis !== undefined
+                  ? (stock.currentPrice - stock.costBasis) * stock.quantity
+                  : null;
+              const plPercent =
+                stock.costBasis !== undefined && stock.costBasis !== 0
+                  ? ((stock.currentPrice - stock.costBasis) / stock.costBasis) * 100
+                  : null;
               return (
                 <tr
                   key={stock.id}
@@ -212,8 +220,20 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
                   <td className="px-4 py-3 text-right text-slate-200">
                     {formatCurrency(stock.currentPrice * stock.quantity)}
                   </td>
-                  <td className="px-4 py-3 text-right text-slate-400">
-                    {formatNumber(stock.volume)}
+                  <td
+                    className={`px-4 py-3 text-right ${
+                      pl === null ? 'text-slate-500' : pl >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
+                  >
+                    {pl === null ? (
+                      '—'
+                    ) : (
+                      <>
+                        {pl >= 0 ? '+' : ''}
+                        {formatCurrency(pl)}
+                        {plPercent !== null && ` (${formatPercent(plPercent)})`}
+                      </>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
