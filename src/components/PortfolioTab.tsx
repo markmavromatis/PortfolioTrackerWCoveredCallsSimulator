@@ -202,7 +202,16 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
                   key={stock.id}
                   className="border-t border-slate-800 hover:bg-slate-900/50"
                 >
-                  <td className="px-4 py-3 font-semibold text-slate-100">{stock.ticker}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-100">
+                    <a
+                      href={`https://finance.yahoo.com/quote/${encodeURIComponent(stock.ticker)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-indigo-400 hover:underline"
+                    >
+                      {stock.ticker}
+                    </a>
+                  </td>
                   <td className="px-4 py-3 text-right text-slate-200">
                     {formatCurrency(stock.currentPrice)}
                   </td>
