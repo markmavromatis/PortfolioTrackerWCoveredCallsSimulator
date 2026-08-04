@@ -68,6 +68,8 @@ app.get('/api/options', async (req, res) => {
         bid: o.bid ?? null,
         ask: o.ask ?? null,
         last: o.lastPrice ?? null,
+        change: o.change ?? null,
+        changePercent: o.percentChange ?? null,
         volume: o.volume ?? null,
         openInterest: o.openInterest ?? null,
       }))

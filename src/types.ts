@@ -14,6 +14,7 @@ export interface SimulatedCoveredCall {
   contracts: number;
   strikePrice: number;
   premium: number;
+  premiumChangePercent?: number;
   openDate: string;
   expirationDate: string;
   notes?: string;

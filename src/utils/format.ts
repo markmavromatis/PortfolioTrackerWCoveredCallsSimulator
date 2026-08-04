@@ -31,6 +31,14 @@ export function formatShortDate(isoDate: string): string {
   return year === currentYear ? `${month}/${day}` : `${month}/${day}/${year.slice(2)}`;
 }
 
+export function formatOptionSymbol(
+  ticker: string,
+  expirationDate: string,
+  strikePrice: number
+): string {
+  return `${ticker} ${formatShortDate(expirationDate)} ${formatCurrencyWhole(strikePrice)} C`;
+}
+
 export function daysBetween(from: string, to: string): number {
   const fromDate = new Date(from);
   const toDate = new Date(to);

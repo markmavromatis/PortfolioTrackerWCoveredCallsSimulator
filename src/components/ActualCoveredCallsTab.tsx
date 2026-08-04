@@ -66,7 +66,20 @@ export function ActualCoveredCallsTab({ stocks, positions, setPositions }: Actua
 
   const strikeOptions =
     form.strikePrice && !callOptions.some((o) => String(o.strike) === form.strikePrice)
-      ? [...callOptions, { symbol: 'manual', strike: Number(form.strikePrice), bid: null, ask: null, last: null, volume: null, openInterest: null }]
+      ? [
+          ...callOptions,
+          {
+            symbol: 'manual',
+            strike: Number(form.strikePrice),
+            bid: null,
+            ask: null,
+            last: null,
+            change: null,
+            changePercent: null,
+            volume: null,
+            openInterest: null,
+          },
+        ]
       : callOptions;
 
   useEffect(() => {

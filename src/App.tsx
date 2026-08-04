@@ -54,6 +54,7 @@ function App() {
         {activeTab === 'simulate' && (
           <SimulateCoveredCallsTab
             stocks={stocks}
+            setStocks={setStocks}
             simulations={simulations}
             setSimulations={setSimulations}
           />

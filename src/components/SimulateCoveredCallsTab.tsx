@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { SimulatedCoveredCall, Stock } from '../types';
 import { calculateCoveredCallMetrics } from '../utils/coveredCall';
-import { formatCurrency, formatCurrencyWhole, formatPercent, formatShortDate } from '../utils/format';
-import { fetchExpirations, fetchCallOptions, midPrice, type CallOption } from '../api/market';
+import {
+  formatCurrency,
+  formatCurrencyWhole,
+  formatOptionSymbol,
+  formatPercent,
+} from '../utils/format';
+import { fetchExpirations, fetchCallOptions, fetchQuotes, midPrice, type CallOption } from '../api/market';
 import { Modal } from './Modal';
 
 interface SimulateCoveredCallsTabProps {
   stocks: Stock[];
+  setStocks: React.Dispatch<React.SetStateAction<Stock[]>>;
   simulations: SimulatedCoveredCall[];
   setSimulations: React.Dispatch<React.SetStateAction<SimulatedCoveredCall[]>>;
 }
@@ -25,6 +31,7 @@ const emptyForm = {
 
 export function SimulateCoveredCallsTab({
   stocks,
+  setStocks,
   simulations,
   setSimulations,
 }: SimulateCoveredCallsTabProps) {
@@ -32,6 +39,9 @@ export function SimulateCoveredCallsTab({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   const [expirations, setExpirations] = useState<string[]>([]);
   const [loadingExpirations, setLoadingExpirations] = useState(false);
@@ -183,6 +193,65 @@ export function SimulateCoveredCallsTab({
     setShowForm(false);
   }
 
+  async function handleRefresh() {
+    if (stocks.length === 0) return;
+    setRefreshing(true);
+    setRefreshError(null);
+    try {
+      const uniqueContracts = Array.from(
+        new Map(
+          simulations.map((sim) => [`${sim.ticker}|${sim.expirationDate}`, sim])
+        ).values()
+      );
+
+      const [quotes, optionChains] = await Promise.all([
+        fetchQuotes(stocks.map((s) => s.ticker)),
+        Promise.all(
+          uniqueContracts.map((sim) =>
+            fetchCallOptions(sim.ticker, sim.expirationDate)
+              .then((options) => ({ ticker: sim.ticker, expirationDate: sim.expirationDate, options }))
+              .catch(() => ({ ticker: sim.ticker, expirationDate: sim.expirationDate, options: [] as CallOption[] }))
+          )
+        ),
+      ]);
+
+      setStocks((prev) =>
+        prev.map((s) => {
+          const quote = quotes.find((q) => q.symbol.toUpperCase() === s.ticker.toUpperCase());
+          if (!quote || quote.last === null) return s;
+          return {
+            ...s,
+            currentPrice: quote.last,
+            priceChange: quote.change ?? s.priceChange,
+            volume: quote.volume ?? s.volume,
+          };
+        })
+      );
+
+      setSimulations((prev) =>
+        prev.map((sim) => {
+          const chain = optionChains.find(
+            (c) => c.ticker === sim.ticker && c.expirationDate === sim.expirationDate
+          );
+          const option = chain?.options.find((o) => Math.abs(o.strike - sim.strikePrice) < 0.001);
+          const mid = option ? midPrice(option) : null;
+          if (mid === null) return sim;
+          return {
+            ...sim,
+            premium: mid,
+            premiumChangePercent: option?.changePercent ?? undefined,
+          };
+        })
+      );
+
+      setLastRefreshed(new Date());
+    } catch (err) {
+      setRefreshError(err instanceof Error ? err.message : 'Failed to refresh prices.');
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   const previewMetrics = useMemo(() => {
     if (!selectedStock || !form.strikePrice || !form.premium || !form.expirationDate) return null;
     const costBasis = selectedStock.costBasis ?? selectedStock.currentPrice;
@@ -204,14 +273,34 @@ export function SimulateCoveredCallsTab({
           data to compare premium income, breakeven, and annualized return before placing a real
           order.
         </p>
-        <button
-          onClick={openAddForm}
-          disabled={stocks.length === 0}
-          className="rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap"
-        >
-          + New Simulation
-        </button>
+        <div className="flex items-center gap-3 whitespace-nowrap">
+          {lastRefreshed && (
+            <span className="text-xs text-slate-500">
+              Updated {lastRefreshed.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing || stocks.length === 0}
+            className="rounded-lg border border-slate-700 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-200 px-4 py-2 text-sm font-medium transition-colors"
+          >
+            {refreshing ? 'Refreshing…' : 'Refresh Prices'}
+          </button>
+          <button
+            onClick={openAddForm}
+            disabled={stocks.length === 0}
+            className="rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors"
+          >
+            + New Simulation
+          </button>
+        </div>
       </div>
+
+      {refreshError && (
+        <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
+          {refreshError}
+        </div>
+      )}
 
       {stocks.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-700 px-4 py-8 text-center text-slate-500 text-sm">
@@ -228,11 +317,9 @@ export function SimulateCoveredCallsTab({
                   <span className="sr-only">Reorder</span>
                 </th>
                 <th className="px-4 py-3 font-medium">Actions</th>
-                <th className="px-4 py-3 font-medium">Ticker</th>
+                <th className="px-4 py-3 font-medium">Option</th>
                 <th className="px-4 py-3 font-medium text-right">#</th>
-                <th className="px-4 py-3 font-medium text-right">Strike</th>
                 <th className="px-4 py-3 font-medium text-right">Premium</th>
-                <th className="px-4 py-3 font-medium text-right">Expiration</th>
                 <th className="px-4 py-3 font-medium text-right">Premium Collected</th>
                 <th className="px-4 py-3 font-medium text-right">Capped Limit</th>
                 <th className="px-4 py-3 font-medium text-right">Total Returns</th>
@@ -244,7 +331,7 @@ export function SimulateCoveredCallsTab({
             <tbody>
               {simulations.length === 0 && (
                 <tr>
-                  <td colSpan={13} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
                     No simulations yet. Click "New Simulation" to model a trade.
                   </td>
                 </tr>
@@ -295,19 +382,27 @@ export function SimulateCoveredCallsTab({
                         </button>
                       </div>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-100">{sim.ticker}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-100 whitespace-nowrap">
+                      {formatOptionSymbol(sim.ticker, sim.expirationDate, sim.strikePrice)}
+                    </td>
                     <td className="px-4 py-3 text-right text-slate-200">{sim.contracts}</td>
                     <td className="px-4 py-3 text-right text-slate-200">
-                      {formatCurrencyWhole(sim.strikePrice)}
-                    </td>
-                    <td className="px-4 py-3 text-right text-slate-200">
-                      {formatCurrency(sim.premium)}
-                      {stock && stock.currentPrice
-                        ? ` (${((sim.premium / stock.currentPrice) * 100).toFixed(2)}%)`
-                        : ''}
-                    </td>
-                    <td className="px-4 py-3 text-right text-slate-400">
-                      {formatShortDate(sim.expirationDate)}
+                      <div>
+                        {formatCurrency(sim.premium)}
+                        {stock && stock.currentPrice
+                          ? ` (${((sim.premium / stock.currentPrice) * 100).toFixed(2)}%)`
+                          : ''}
+                      </div>
+                      {sim.premiumChangePercent !== undefined && (
+                        <div
+                          className={`text-xs ${
+                            sim.premiumChangePercent >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                          }`}
+                        >
+                          {sim.premiumChangePercent >= 0 ? '+' : ''}
+                          {sim.premiumChangePercent.toFixed(2)}% today
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right text-emerald-400">
                       {formatCurrency(metrics.premiumCollected)}

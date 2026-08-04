@@ -13,6 +13,8 @@ export interface CallOption {
   bid: number | null;
   ask: number | null;
   last: number | null;
+  change: number | null;
+  changePercent: number | null;
   volume: number | null;
   openInterest: number | null;
 }
@@ -48,6 +50,8 @@ export function fetchCallOptions(symbol: string, expiration: string): Promise<Ca
 }
 
 export function midPrice(option: CallOption): number | null {
-  if (option.bid !== null && option.ask !== null) return (option.bid + option.ask) / 2;
+  if (option.bid !== null && option.ask !== null && (option.bid > 0 || option.ask > 0)) {
+    return (option.bid + option.ask) / 2;
+  }
   return option.last ?? option.bid ?? option.ask ?? null;
 }

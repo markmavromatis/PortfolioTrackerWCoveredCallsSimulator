@@ -1,32 +1,47 @@
-# React + TypeScript + Vite
+# Portfolio Tracker w/ Covered Call Simulator
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A small React + Express app for tracking a stock portfolio and generating income from it with covered calls.
 
-Currently, two official plugins are available:
+## Backstory
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project started as a personal tool when I was laid off from my full-time job. Rather than let a brokerage account sit idle during the job search, I wanted a simple way to track my holdings and sell covered calls to generate income. This app lets me track my holdings, model covered calls before placing orders, and monitoring the covered call positions after purchase.
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Portfolio** — Track tickers, share quantity, and cost basis. Current price, day change, and market value are pulled live from Yahoo Finance, with a one-click refresh for all holdings.
+- **Simulate Covered Calls** — Pick a holding, an expiration, and a strike from the live option chain, and preview premium collected, breakeven, max profit, downside protection, and annualized return before placing a real trade. A refresh button re-pulls both stock and option prices so simulations don't go stale.
+- **Actual Covered Calls** — Record real covered call positions you've opened (or closed/assigned/expired) against your portfolio and track their outcomes.
 
-## Expanding the Oxlint configuration
+All data is kept in the browser's `localStorage` — there's no database or account system.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Tech Stack
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- React 19 + TypeScript, built with Vite
+- Tailwind CSS
+- A small Express proxy server (`server/`) that wraps [`yahoo-finance2`](https://github.com/gadicc/yahoo-finance2) for stock quotes and option chains
+
+## Getting Started
+
+```bash
+npm install
+npm run dev:all
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+`dev:all` runs the Vite dev server and the Express quote/options proxy together. The proxy listens on port `4000` by default (see `server/.env.example`); Vite proxies `/api/*` requests to it.
+
+To run them separately:
+
+```bash
+npm run dev         # Vite dev server
+npm run dev:server   # Express API proxy
+```
+
+## Other Scripts
+
+- `npm run build` — type-check and build for production
+- `npm run preview` — preview the production build locally
+- `npm run lint` — run Oxlint
+
+## Disclaimer
+
+This tool is for personal portfolio tracking and educational modeling only. It is not financial advice, and market data comes from an unofficial Yahoo Finance client with no uptime or accuracy guarantees.
