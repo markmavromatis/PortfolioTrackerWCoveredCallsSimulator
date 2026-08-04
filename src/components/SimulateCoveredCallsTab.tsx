@@ -266,8 +266,8 @@ export function SimulateCoveredCallsTab({
   }, [selectedStock, form]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="shrink-0 flex items-center justify-between mb-6">
         <p className="text-sm text-slate-400 max-w-xl">
           Model hypothetical covered call trades against your holdings using live option chain
           data to compare premium income, breakeven, and annualized return before placing a real
@@ -297,21 +297,21 @@ export function SimulateCoveredCallsTab({
       </div>
 
       {refreshError && (
-        <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
+        <div className="shrink-0 mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
           {refreshError}
         </div>
       )}
 
       {stocks.length === 0 && (
-        <div className="rounded-xl border border-dashed border-slate-700 px-4 py-8 text-center text-slate-500 text-sm">
+        <div className="shrink-0 rounded-xl border border-dashed border-slate-700 px-4 py-8 text-center text-slate-500 text-sm">
           Add stocks to your portfolio first, then simulate covered calls against them.
         </div>
       )}
 
       {stocks.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-slate-800">
           <table className="w-full text-sm">
-            <thead>
+            <thead className="sticky top-0 z-10">
               <tr className="bg-slate-900 text-slate-400 text-left">
                 <th className="px-2 py-3 font-medium w-8">
                   <span className="sr-only">Reorder</span>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Stock } from '../types';
 import { fetchQuote, fetchQuotes } from '../api/market';
-import { formatCurrency, formatNumber, formatPercent } from '../utils/format';
+import { formatCurrency, formatCurrencyWhole, formatNumber, formatPercent } from '../utils/format';
 import { Modal } from './Modal';
 
 interface PortfolioTabProps {
@@ -115,8 +115,8 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="shrink-0 flex flex-wrap items-end justify-between gap-4 mb-6">
         <div className="flex gap-6">
           <div>
             <div className="text-sm text-slate-400">Total Value</div>
@@ -159,14 +159,14 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
       </div>
 
       {refreshError && (
-        <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
+        <div className="shrink-0 mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
           {refreshError}
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-slate-800">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="bg-slate-900 text-slate-400 text-left">
               <th className="px-4 py-3 font-medium">Ticker</th>
               <th className="px-4 py-3 font-medium text-right">Price</th>
@@ -227,7 +227,15 @@ export function PortfolioTab({ stocks, setStocks }: PortfolioTabProps) {
                     {formatNumber(stock.quantity)}
                   </td>
                   <td className="px-4 py-3 text-right text-slate-200">
-                    {formatCurrency(stock.currentPrice * stock.quantity)}
+                    {formatCurrencyWhole(stock.currentPrice * stock.quantity)}{' '}
+                    <span
+                      className={`text-xs ${
+                        stock.priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
+                      ({stock.priceChange >= 0 ? '+' : ''}
+                      {formatCurrencyWhole(stock.priceChange * stock.quantity)})
+                    </span>
                   </td>
                   <td
                     className={`px-4 py-3 text-right ${

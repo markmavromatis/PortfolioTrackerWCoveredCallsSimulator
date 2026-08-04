@@ -213,8 +213,8 @@ export function ActualCoveredCallsTab({ stocks, positions, setPositions }: Actua
   const openCount = positions.filter((p) => p.status === 'Open').length;
 
   return (
-    <div>
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="shrink-0 flex flex-wrap items-end justify-between gap-4 mb-6">
         <div className="flex gap-6">
           <div>
             <div className="text-sm text-slate-400">Open Positions</div>
@@ -241,9 +241,9 @@ export function ActualCoveredCallsTab({ stocks, positions, setPositions }: Actua
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="flex-1 min-h-0 overflow-auto rounded-xl border border-slate-800">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 z-10">
             <tr className="bg-slate-900 text-slate-400 text-left">
               <th className="px-4 py-3 font-medium">Ticker</th>
               <th className="px-4 py-3 font-medium text-right">Contracts</th>

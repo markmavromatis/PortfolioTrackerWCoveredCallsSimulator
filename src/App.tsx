@@ -23,15 +23,15 @@ function App() {
   const [positions, setPositions] = useLocalStorage<CoveredCallPosition[]>('cch:positions', []);
 
   return (
-    <div className="min-h-screen bg-[#0f1117]">
-      <header className="border-b border-slate-800 bg-[#0f1117]/80 backdrop-blur sticky top-0 z-10">
+    <div className="h-screen flex flex-col overflow-hidden bg-[#0f1117]">
+      <header className="shrink-0 border-b border-slate-800 bg-[#0f1117]/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-6 py-5">
           <h1 className="text-xl font-semibold text-slate-100">Portfolio Tracker w/Covered Call Simulator</h1>
           <p className="text-sm text-slate-400">Manage your portfolio and covered call income</p>
         </div>
       </header>
 
-      <nav className="mx-auto max-w-6xl px-6 pt-4">
+      <nav className="shrink-0 mx-auto max-w-6xl px-6 pt-4 w-full">
         <div className="flex gap-1 border-b border-slate-800">
           {TABS.map((tab) => (
             <button
@@ -49,7 +49,7 @@ function App() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-6xl px-6 py-6">
+      <main className="flex-1 min-h-0 mx-auto max-w-6xl px-6 py-6 w-full flex flex-col">
         {activeTab === 'portfolio' && <PortfolioTab stocks={stocks} setStocks={setStocks} />}
         {activeTab === 'simulate' && (
           <SimulateCoveredCallsTab
