@@ -400,7 +400,7 @@ export function SimulateCoveredCallsTab({
                           }`}
                         >
                           {sim.premiumChangePercent >= 0 ? '+' : ''}
-                          {sim.premiumChangePercent.toFixed(2)}% today
+                          {sim.premiumChangePercent.toFixed(2)}%
                         </div>
                       )}
                     </td>
