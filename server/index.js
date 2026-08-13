@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import YahooFinance from 'yahoo-finance2';
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.API_PORT || 4000;
 
 // Unofficial client for Yahoo Finance's undocumented endpoints — no API key,
 // but no guarantees either. See yahoo-finance2's own docs: don't assume data

@@ -27,7 +27,7 @@ npm install
 npm run dev:all
 ```
 
-`dev:all` runs the Vite dev server and the Express quote/options proxy together. The proxy listens on port `4000` by default (see `server/.env.example`); Vite proxies `/api/*` requests to it.
+`dev:all` runs the Vite dev server and the Express quote/options proxy together. The proxy listens on port `4000` by default; Vite proxies `/api/*` requests to it. To use a different port (e.g. if `4000` clashes with another app), copy `.env.example` to `.env` and set `API_PORT` — both the server and Vite's proxy read it from there.
 
 To run them separately:
 
